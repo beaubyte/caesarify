@@ -22,9 +22,17 @@ typedef enum {
     TestAppView_Popup
 } TestAppView;
 
+// allocates memory for the scene thing
+void caesar_app_scene_pizza_init() {
+    app->scene_manager = scene_manager_alloc(&caesar_app_scene_event_pizza, app);
+}
+
 int32_t caesarify_app(void* p) {
     UNUSED(p);
     FURI_LOG_I("TEST", "I'm caesarify!");
+    CaesarApp* app = malloc(sizeof(CaesarApp));
+    caesar_app_scene_pizza_init(app); // start init of scene manager
+    caesar_app_view_pizza_init(app); // start init of view dispatcher
 
     return 0;
 }
