@@ -10,29 +10,166 @@
 
 #define TAG "caesarify"
 
+// -------------- Big Enum Lobby Interests ---------------
 typedef enum {
     CaesarScene_MainMenu, // scene 1
     CaesarScene_FirstPopup, // scene 2
-    CaesarScene_SecondPopup,
-    CaesarAppScene_count
-} TestAppScene;
+    CaesarScene_SecondPopup, // scene 3
+    CaesarScene_count // scene 4
+} caesar_app_scene;
 
+// Menus used by the app
 typedef enum {
-    TestAppView_Menu,
-    TestAppView_Popup
-} TestAppView;
+    CaesarView_Menu, // menu type view
+    CaesarView_Popup // popup type view
+} caesar_app_view;
+
+// the app context struct
+typedef struct {
+    SceneManager* scene_manager;
+    ViewDispatcher* view_dispatcher;
+    Menu* menu;
+    Popup* popup;
+} Caesarify;
+
+// custom events enum
+typedef enum {
+    CaesarEvent_ShowPopupOne,
+    CaesarEvent_ShowPopupTwo
+} CaesarEvent;
+
+// indicies for the menu items
+typedef enum {
+    CaesarMenuSelection_One,
+    CaesarMenuSelection_Two
+} CaesarMenuSelection;
+
+// ------------------ Main Menu ------------------------
+void caesar_scene_on_enter_main_menu(void* context) {
+    FURI_LOG_T(TAG, "caesar_scene_on_enter_main_menu");
+    Caesarify* app = context;
+    menu_reset(app->menu);
+
+    // icons are null, because i dont have any animated icons, if an icon does not have a framerate, we end up dividing by zero
+    menu_add_item(
+        app->menu,
+        "First popup", // Label
+        NULL, // icon would go here
+        CaesarMenuSelection_One, // enum value provided to callback function as an index (what option was selected)
+        caesar_app_menu_callback_main_menu, // callback function if selected
+        app);
+
+    menu_add_item(
+        app->menu,
+        "Second popup",
+        NULL,
+        CaesarMenuSelection_Two,
+        caesar_menu_callback_main_menu,
+        app);
+
+    view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Menu);
+}
+
+bool caesar_scene_on_event_main_menu(void* context, SceneManagerEvent event) {
+    FURI_LOG_T(TAG, "caesar_scene_on_event_main_menu");
+    Caesarify* app = context;
+    bool consumed = false;
+    switch(event.type) {
+    case SceneManagerEventTypeCustom:
+        switch(event.event) {
+        case CaesarEvent_ShowPopupOne:
+            scene_manager_next_scene(app->scene_manager, CaesarScene_FirstPopup);
+            consumed = true;
+            break;
+        case CaesarEvent_ShowPopupTwo:
+            scene_manager_next_scene(app->scene_manager, CaesarScene_SecondPopup);
+            consumed = true;
+            break;
+        }
+    default:
+        consumed = false;
+        break;
+    }
+    return consumed;
+}
+
+void caesar_scene_on_exit_main_menu(void* context) {
+    FURI_LOG_T(TAG, "scene_on_exit_main_menu");
+    Caesarify* app = context;
+    menu_reset(app->menu);
+}
+// -------------------- Popup 1 scene ---------------------------
+void caesar_scene_on_enter_popup_one(void* context) {
+    FURI_LOG_T(TAG, "scene_on_enter_popup_one");
+    Caesarify* app = context;
+    popup_reset(app->popup);
+    popup_set_context(app->popup, app);
+    popup_set_header(app->popup, 10, 10, &I_cvc_36x36);
+    popup_set_text(app->popup, "First popup!! Pizza ready!", 64, 20, AlignLeft, AlignTop);
+}
+
+// collection of all scene on_enter handlers
+void (*const caesar_scene_on_enter_handlers[])(void*) = {
+    caesar_scene_on_enter_main_menu,
+    caesar_scene_on_enter_popup_one,
+    caesar_scene_on_enter_popup_two};
+
+// collection of all scene on event handlers
+bool (*const caesar_scene_on_event_handlers[])(void*, SceneManagerEvent) = {
+    caesar_scene_on_event_main_menu,
+    caesar_scene_on_event_popup_one,
+    caesar_scene_on_event_popup_two};
+
+// collection of all scene on EXIT handlers
+void (*const caesar_scene_on_exit_handlers[])(void*) = {
+    caesar_app_scene_on_exit_main_menu,
+    caesar_app_scene_on_exit_popup_one,
+    caesar_app_scene_on_exit_popup_two};
+
+// collection of all on_enter, on_event, on_exit handlers
+const SceneManagerHandlers test_app_scene_event_handlers = {
+    .on_enter_handlers = caesar_scene_on_enter_handlers,
+    .on_event_handlers = caesar_scene_on_event_handlers,
+    .on_exit_handlers = caesar_scene_on_exit_handlers,
+    .scene_num = CaesarScene_count};
 
 // allocates memory for the scene thing
-void caesar_app_scene_pizza_init() {
-    app->scene_manager = scene_manager_alloc(&caesar_app_scene_event_pizza, app);
+void caesar_scene_manager_init() {
+    app->scene_manager = scene_manager_alloc(&caesar_scene_event_manager, app);
+}
+
+void caesar_view_dispatcher_init() {
+    app->menu = menu_alloc();
+    app->popup = popup_alloc();
+
+    // assigns callback that passes events from views to the scene pizza
+    view_dispatcher_set_event_callback_context(app->view_dispatcher, app);
+    view_dispatcher_set_custom_event_callback(
+        app->view_dispatcher, caesar_app_scene_manager_custom_event_callback);
+    view_dispatcher_set_navigation_event_callback
+    app->view_dispatcher, caesar_scene_manager_navigation_event_callback);
+
+    // add views to the view dispatcher pizza, indexed by the enum
+    view_dispatcher_add_view(app->view_dispatcher, CaesarView_Menu, menu_get_view(app->menu));
 }
 
 int32_t caesarify_app(void* p) {
     UNUSED(p);
-    FURI_LOG_I("TEST", "I'm caesarify!");
-    CaesarApp* app = malloc(sizeof(CaesarApp));
-    caesar_app_scene_pizza_init(app); // start init of scene manager
-    caesar_app_view_pizza_init(app); // start init of view dispatcher
+    FURI_LOG_I("TEST", "Pizza, Pizza!");
+    Caesarify* app = malloc(sizeof(Caesarify));
+    caesar_scene_manager_init(app); // start init of scene manager (scene pizza)
+    caesar_view_dispatcher_init(app); // start init of view dispatcher (view pizza)
 
-    return 0;
+    view_dispatcher_set_event_callback_context(app->view_dispatcher, app);
+
+    // assign callback that pass events from views to the scene manager
+    view_dispatcher_set_custom_event_callback(
+        app->view_dispatcher, caesar_app_scene_manager_custom_event_callback);
+    view_dispatcher_set_navigation_event_callback(
+        app->view_dispatcher, CaesarView_Menu, menu_get_view(app->menu));
+
+    // add views to the dispatcher
+    view_dispatcher_add_view(app->view_dispatcher, Cae)
+
+        return 0;
 }
