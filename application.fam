@@ -14,4 +14,7 @@ App(
     # fap_author="J. Doe",
     # fap_weburl="https://github.com/user/caesarify",
     fap_icon_assets="images",  # Image assets to compile for this application
+    sources=[
+        "*.c",
+    ],
 )
