@@ -67,7 +67,7 @@ void caesar_scene_on_enter_main_menu(void* context) {
     // icons are null, because i dont have any animated icons, if an icon does not have a framerate, we end up dividing by zero
     menu_add_item(
         app->menu,
-        "First popup", // Label
+        "1: Check Card Type", // Label
         NULL, // icon would go here
         CaesarMenuSelection_One, // enum value provided to callback function as an index (what option was selected)
         caesar_menu_callback_main_menu, // callback function if selected
@@ -75,7 +75,7 @@ void caesar_scene_on_enter_main_menu(void* context) {
 
     menu_add_item(
         app->menu,
-        "Second popup",
+        "2: Write Contents",
         NULL,
         CaesarMenuSelection_Two,
         caesar_menu_callback_main_menu,
@@ -206,10 +206,12 @@ bool caesar_scene_manager_navigation_event_callback(void* context) {
 
 // allocates memory for the scene thing
 void caesar_scene_manager_init(Caesarify* app) {
+    FURI_LOG_T(TAG, "allocating memory for scene manager");
     app->scene_manager = scene_manager_alloc(&caesar_scene_event_handlers, app);
 }
 
 void caesar_view_dispatcher_init(Caesarify* app) {
+    FURI_LOG_T(TAG, "allocating memory for view dispatcher");
     app->view_dispatcher = view_dispatcher_alloc();
 
     FURI_LOG_D(TAG, "view_dispatcher_init is now allocating views");
@@ -249,11 +251,14 @@ void caesarify_free(Caesarify* app) {
 }
 
 void set_log_level() {
-#ifdef FURI_DEBUG
+    furi_log_set_level(FuriLogLevelTrace);
+    /*
+    #ifdef FURI_DEBUG
     furi_log_set_level(FuriLogLevelTrace);
 #else
     furi_log_set_level(FuriLogLevelInfo);
 #endif
+*/
 }
 
 int32_t caesarify_app(void* p) {
