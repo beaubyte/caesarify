@@ -114,18 +114,27 @@ void caesar_scene_on_exit_main_menu(void* context) {
     Caesarify* app = context;
     menu_reset(app->menu);
 }
+
 // -------------------- Popup 1 scene ---------------------------
 void caesar_scene_on_enter_popup_one(void* context) {
     FURI_LOG_T(TAG, "scene_on_enter_popup_one");
     Caesarify* app = context;
     popup_reset(app->popup);
+    FURI_LOG_T(TAG, "menu reset");
     popup_set_context(app->popup, app);
-    popup_set_icon(app->popup, 0, 0, NULL);
+    FURI_LOG_T(TAG, "context set");
+    popup_set_icon(app->popup, 0, 0, &I_one);
+    FURI_LOG_T(TAG, "icon set");
     popup_set_header(app->popup, "Popup 1:", 10, 20, AlignCenter, AlignTop);
+    FURI_LOG_T(TAG, "header set");
     popup_set_text(app->popup, "First popup!! Pizza ready!", 64, 20, AlignCenter, AlignTop);
+    FURI_LOG_T(TAG, "text set");
     popup_enable_timeout(app->popup);
+    FURI_LOG_T(TAG, "timeout enabled");
     popup_set_timeout(app->popup, 300);
+    FURI_LOG_T(TAG, "timeout set");
     view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Popup);
+    FURI_LOG_T(TAG, "switching to view");
 }
 
 bool caesar_scene_on_event_popup_one(void* context, SceneManagerEvent event) {
@@ -140,6 +149,7 @@ void caesar_scene_on_exit_popup_one(void* context) {
     Caesarify* app = context;
     popup_reset(app->popup);
 }
+
 // -------------------- Popup 2 scene ---------------------------
 void caesar_scene_on_enter_popup_two(void* context) {
     FURI_LOG_T(TAG, "caesar_scene_on_enter_popup_two");
@@ -148,6 +158,8 @@ void caesar_scene_on_enter_popup_two(void* context) {
     popup_set_context(app->popup, app);
     popup_set_icon(app->popup, 0, 0, NULL);
     popup_set_header(app->popup, "The second elusive popup", 10, 10, AlignCenter, AlignTop);
+    popup_enable_timeout(app->popup);
+    popup_set_timeout(app->popup, 300);
     popup_set_text(app->popup, "Woah, a second popup!! :3", 64, 20, AlignCenter, AlignTop);
     view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Popup);
 }
@@ -217,6 +229,8 @@ void caesar_view_dispatcher_init(Caesarify* app) {
     FURI_LOG_D(TAG, "view_dispatcher_init is now allocating views");
     app->menu = menu_alloc();
     app->popup = popup_alloc();
+    furi_assert(app->menu);
+    furi_assert(app->popup);
 
     // assigns callback that passes events from views to the scene manager
     view_dispatcher_set_event_callback_context(app->view_dispatcher, app);
