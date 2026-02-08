@@ -120,8 +120,11 @@ void caesar_scene_on_enter_popup_one(void* context) {
     Caesarify* app = context;
     popup_reset(app->popup);
     popup_set_context(app->popup, app);
-    popup_set_header(app->popup, "Popup 1:", 64, 20, AlignCenter, AlignTop);
-    popup_set_text(app->popup, "First popup!! Pizza ready!", 64, 20, AlignLeft, AlignTop);
+    popup_set_icon(app->popup, 0, 0, NULL);
+    popup_set_header(app->popup, "Popup 1:", 10, 20, AlignCenter, AlignTop);
+    popup_set_text(app->popup, "First popup!! Pizza ready!", 64, 20, AlignCenter, AlignTop);
+    popup_enable_timeout(app->popup);
+    popup_set_timeout(app->popup, 300);
     view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Popup);
 }
 
@@ -143,9 +146,9 @@ void caesar_scene_on_enter_popup_two(void* context) {
     Caesarify* app = context;
     popup_reset(app->popup);
     popup_set_context(app->popup, app);
-    popup_set_header(app->popup, "The second elusive popup", 64, 10, AlignCenter, AlignTop);
-    popup_set_icon(app->popup, 10, 10, &I_cvc_36x36);
-    popup_set_text(app->popup, "Woah, a second popup!! :3", 64, 20, AlignLeft, AlignTop);
+    popup_set_icon(app->popup, 0, 0, NULL);
+    popup_set_header(app->popup, "The second elusive popup", 10, 10, AlignCenter, AlignTop);
+    popup_set_text(app->popup, "Woah, a second popup!! :3", 64, 20, AlignCenter, AlignTop);
     view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Popup);
 }
 
@@ -213,15 +216,16 @@ void caesar_view_dispatcher_init(Caesarify* app) {
     app->menu = menu_alloc();
     app->popup = popup_alloc();
 
-    // assigns callback that passes events from views to the scene pizza
+    // assigns callback that passes events from views to the scene manager
     view_dispatcher_set_event_callback_context(app->view_dispatcher, app);
     view_dispatcher_set_custom_event_callback(
         app->view_dispatcher, caesar_scene_manager_custom_event_callback);
     view_dispatcher_set_navigation_event_callback(
         app->view_dispatcher, caesar_scene_manager_navigation_event_callback);
 
-    // add views to the view dispatcher pizza, indexed by the enum
+    // add views to the view dispatcher, indexed by the enum.
     view_dispatcher_add_view(app->view_dispatcher, CaesarView_Menu, menu_get_view(app->menu));
+    view_dispatcher_add_view(app->view_dispatcher, CaesarView_Popup, popup_get_view(app->popup));
 }
 
 Caesarify* caesarify_init() {
