@@ -125,18 +125,12 @@ void caesar_scene_on_enter_check_card_type(void* context) {
     FURI_LOG_T(TAG, "scene_on_enter_check_card_type");
     Caesarify* app = context;
     popup_reset(app->popup);
-    FURI_LOG_T(TAG, "menu reset");
     popup_set_context(app->popup, app);
-    FURI_LOG_T(TAG, "context set");
-    popup_set_header(app->popup, "Reading", 10, 20, AlignCenter, AlignTop);
-    FURI_LOG_T(TAG, "header set");
+    popup_set_header(app->popup, "Reading", 0, 0, AlignCenter, AlignTop);
     popup_set_text(
         app->popup, "Hold unknown card to Flipper's back", 64, 20, AlignCenter, AlignTop);
-    FURI_LOG_T(TAG, "text set");
     popup_enable_timeout(app->popup);
-    FURI_LOG_T(TAG, "timeout enabled");
     popup_set_timeout(app->popup, 300);
-    FURI_LOG_T(TAG, "timeout set");
     view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Popup);
     FURI_LOG_T(TAG, "switching to view");
 }
@@ -151,7 +145,7 @@ bool caesar_scene_on_event_check_card_type(void* context, SceneManagerEvent even
 void caesar_scene_on_exit_check_card_type(void* context) {
     FURI_LOG_T(TAG, "scene_on_exit_check_card_type");
     Caesarify* app = context;
-    submenu_reset(app->submenu);
+    popup_reset(app->popup);
 }
 
 // -------------------- Menu 2 scene ---------------------------
@@ -159,6 +153,8 @@ void caesar_scene_on_enter_show_write_contents(void* context) {
     FURI_LOG_T(TAG, "caesar_scene_on_enter_show_write_contents");
     Caesarify* app = context;
     submenu_reset(app->submenu);
+    submenu_add_item(app->submenu, "Test", 0, caesar_menu_callback_main_menu, app);
+    view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_SubMenu);
 }
 
 bool caesar_scene_on_event_show_write_contents(void* context, SceneManagerEvent event) {
@@ -171,7 +167,7 @@ bool caesar_scene_on_event_show_write_contents(void* context, SceneManagerEvent 
 void caesar_scene_on_exit_show_write_contents(void* context) {
     FURI_LOG_T(TAG, "scene_on_exit_show_write_contents");
     Caesarify* app = context;
-    popup_reset(app->popup);
+    submenu_reset(app->submenu);
 }
 
 // collection of all scene on_enter handlers
@@ -227,8 +223,6 @@ void caesar_view_dispatcher_init(Caesarify* app) {
     app->menu = menu_alloc();
     app->popup = popup_alloc();
     app->submenu = submenu_alloc();
-    furi_assert(app->menu);
-    furi_assert(app->popup);
 
     // assigns callback that passes events from views to the scene manager
     view_dispatcher_set_event_callback_context(app->view_dispatcher, app);
@@ -267,11 +261,11 @@ void caesarify_free(Caesarify* app) {
 }
 
 void set_log_level() {
-#ifdef FURI_DEBUG
+    // #ifdef FURI_DEBUG
     furi_log_set_level(FuriLogLevelTrace);
-#else
-    furi_log_set_level(FuriLogLevelInfo);
-#endif
+    // #else
+    //    furi_log_set_level(FuriLogLevelInfo);
+    // #endif
 }
 
 int32_t caesarify_app(void* p) {
