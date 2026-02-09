@@ -126,9 +126,9 @@ void caesar_scene_on_enter_check_card_type(void* context) {
     Caesarify* app = context;
     popup_reset(app->popup);
     popup_set_context(app->popup, app);
-    popup_set_header(app->popup, "Reading", 0, 0, AlignCenter, AlignTop);
+    popup_set_header(app->popup, "Reading", 80, 10, AlignCenter, AlignTop);
     popup_set_text(
-        app->popup, "Hold unknown card to Flipper's back", 64, 20, AlignCenter, AlignTop);
+        app->popup, "Hold the\nunknown card to\nFlipper's back", 80, 25, AlignCenter, AlignTop);
     popup_enable_timeout(app->popup);
     popup_set_timeout(app->popup, 300);
     view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Popup);
