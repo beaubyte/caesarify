@@ -153,7 +153,8 @@ void caesar_scene_on_enter_show_write_contents(void* context) {
     FURI_LOG_T(TAG, "caesar_scene_on_enter_show_write_contents");
     Caesarify* app = context;
     submenu_reset(app->submenu);
-    submenu_add_item(app->submenu, "Test", 0, caesar_menu_callback_main_menu, app);
+    submenu_add_item(app->submenu, "Caesarify", 0, caesar_menu_callback_main_menu, app);
+    submenu_add_item(app->submenu, "Custom Content", 1, caesar_menu_callback_main_menu, app);
     view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_SubMenu);
 }
 
@@ -239,7 +240,7 @@ void caesar_view_dispatcher_init(Caesarify* app) {
 }
 
 Caesarify* caesarify_init() {
-    FURI_LOG_I("TEST", "Pizza, Pizza!");
+    FURI_LOG_I("caesar_start", "Pizza, Pizza!");
     Caesarify* app = malloc(sizeof(Caesarify));
     caesar_scene_manager_init(app); // start init of scene manager
     caesar_view_dispatcher_init(app); // start init of view dispatcher
