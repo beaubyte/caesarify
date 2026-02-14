@@ -16,7 +16,8 @@ typedef enum {
     CaesarScene_MainMenu, // scene 1
     CaesarScene_CheckCardType, // scene 2
     CaesarScene_WriteContents, // scene 3
-    CaesarScene_count // scene 4
+    CaesarScene_About, // scene 4
+    CaesarScene_count // amount of scenes
 } caesar_app_scene;
 
 // Index of menus used by the app
@@ -38,13 +39,15 @@ typedef struct {
 // custom events enum
 typedef enum {
     CaesarEvent_ShowCheckCardType,
-    CaesarEvent_ShowWriteContents
+    CaesarEvent_ShowWriteContents,
+    CaesarEvent_ShowAbout
 } CaesarEvent;
 
 // indicies for the menu items
 typedef enum {
-    CaesarMenuSelection_One,
-    CaesarMenuSelection_Two
+    CaesarMenuSelection_CheckCardType,
+    CaesarMenuSelection_WriteContents,
+    CaesarMenuSelection_About
 } CaesarMenuSelection;
 
 // ------------------ Main Menu ------------------------
@@ -53,13 +56,15 @@ void caesar_menu_callback_main_menu(void* context, uint32_t index) {
     Caesarify* app = context;
     switch(index) {
         // if first option
-    case CaesarMenuSelection_One:
+    case CaesarMenuSelection_CheckCardType:
         scene_manager_handle_custom_event(app->scene_manager, CaesarEvent_ShowCheckCardType);
         break;
         // if second option
-    case CaesarMenuSelection_Two:
+    case CaesarMenuSelection_WriteContents:
         scene_manager_handle_custom_event(app->scene_manager, CaesarEvent_ShowWriteContents);
         break;
+    case CaesarMenuSelection_About:
+        scene_manager_handle_custom_event(app->scene_manager, CaesarEvent_ShowAbout);
     }
 }
 
@@ -75,7 +80,7 @@ void caesar_scene_on_enter_main_menu(void* context) {
         app->menu,
         "Check Card Type", // Label
         NULL, // icon would go here
-        CaesarMenuSelection_One, // enum value provided to callback function as an index (what option was selected)
+        CaesarMenuSelection_CheckCardType, // enum value provided to callback function as an index (what option was selected)
         caesar_menu_callback_main_menu, // callback function if selected
         app);
 
@@ -83,10 +88,12 @@ void caesar_scene_on_enter_main_menu(void* context) {
         app->menu,
         "Write Contents",
         NULL,
-        CaesarMenuSelection_Two,
+        CaesarMenuSelection_WriteContents,
         caesar_menu_callback_main_menu,
         app);
 
+    menu_add_item(
+        app->menu, "About", NULL, CaesarMenuSelection_About, caesar_menu_callback_main_menu, app);
     view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Menu);
 }
 
@@ -105,6 +112,9 @@ bool caesar_scene_on_event_main_menu(void* context, SceneManagerEvent event) {
         case CaesarEvent_ShowWriteContents:
             scene_manager_next_scene(app->scene_manager, CaesarScene_WriteContents);
             consumed = true;
+            break;
+        case CaesarEvent_ShowAbout:
+            scene_manager_next_scene(app->scene_manager, CaesarScene_About);
             break;
         }
         break;
@@ -171,23 +181,56 @@ void caesar_scene_on_exit_show_write_contents(void* context) {
     submenu_reset(app->submenu);
 }
 
-// collection of all scene on_enter handlers
+// about page scene
+void caesar_scene_on_enter_about(void* context) {
+    FURI_LOG_T(TAG, "scene_on_enter_about");
+    Caesarify* app = context;
+    popup_reset(app->popup);
+    popup_set_context(app->popup, context);
+    popup_set_header(app->popup, "Caesarify", 30, 0, AlignCenter, AlignTop);
+    popup_set_text(
+        app->popup,
+        "App created\nby @mochabeau,\nwith art from\n my bf\n @goatogen",
+        90,
+        5,
+        AlignCenter,
+        AlignTop);
+    view_dispatcher_switch_to_view(app->view_dispatcher, CaesarView_Popup);
+}
+
+bool caesar_scene_on_event_about(void* context, SceneManagerEvent event) {
+    FURI_LOG_T(TAG, "scene_on_event_about");
+    UNUSED(context);
+    UNUSED(event);
+    return false;
+}
+
+void caesar_scene_on_exit_about(void* context) {
+    FURI_LOG_T(TAG, "on_exit_about");
+    Caesarify* app = context;
+    popup_reset(app->popup);
+}
+
+// collection of all scene on ENTER handlers
 void (*const caesar_scene_on_enter_handlers[])(void*) = {
     caesar_scene_on_enter_main_menu,
     caesar_scene_on_enter_check_card_type,
-    caesar_scene_on_enter_show_write_contents};
+    caesar_scene_on_enter_show_write_contents,
+    caesar_scene_on_enter_about};
 
-// collection of all scene on event handlers
+// collection of all scene on EVENT handlers
 bool (*const caesar_scene_on_event_handlers[])(void*, SceneManagerEvent) = {
     caesar_scene_on_event_main_menu,
     caesar_scene_on_event_check_card_type,
-    caesar_scene_on_event_show_write_contents};
+    caesar_scene_on_event_show_write_contents,
+    caesar_scene_on_event_about};
 
 // collection of all scene on EXIT handlers
 void (*const caesar_scene_on_exit_handlers[])(void*) = {
     caesar_scene_on_exit_main_menu,
     caesar_scene_on_exit_check_card_type,
-    caesar_scene_on_exit_show_write_contents};
+    caesar_scene_on_exit_show_write_contents,
+    caesar_scene_on_exit_about};
 
 // collection of all on_enter, on_event, on_exit handlers
 const SceneManagerHandlers caesar_scene_event_handlers = {
@@ -250,7 +293,8 @@ Caesarify* caesarify_init() {
 // frees everything from RAM
 void caesarify_free(Caesarify* app) {
     FURI_LOG_T(TAG, "caesarify freeing memory...");
-    scene_manager_free(app->scene_manager);
+    scene_manager_free(
+        app->scene_manager); // should free all scene because they're enumed together
     view_dispatcher_remove_view(app->view_dispatcher, CaesarView_Menu);
     view_dispatcher_remove_view(app->view_dispatcher, CaesarView_Popup);
     view_dispatcher_remove_view(app->view_dispatcher, CaesarView_SubMenu);
